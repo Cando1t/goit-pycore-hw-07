@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value):
@@ -52,6 +52,19 @@ class AddressBook:
         if name in self.data:
             del self.data[name]
 
+    def get_upcoming_birthdays(self):
+        upcoming_birthdays = []
+        today = datetime.now()
+        next_week = today + timedelta(days=7)
+        for record in self.data.values():
+            if record.birthday:
+                birthday_date = record.birthday.value.replace(year=today.year)
+                if birthday_date < today:
+                    birthday_date = birthday_date.replace(year=today.year + 1)
+                if today <= birthday_date <= next_week:
+                    upcoming_birthdays.append((record.name.value, birthday_date.strftime("%d.%m")))
+        return upcoming_birthdays
+
 def parse_input(user_input):
     tokens = user_input.split()
     if not tokens:
@@ -68,6 +81,15 @@ def add_birthday(args, book):
         return f"Birthday added for {name}."
     else:
         return f"Contact {name} not found."
+
+def birthdays(args, book):
+    upcoming_birthdays = book.get_upcoming_birthdays()
+    if upcoming_birthdays:
+        print("Upcoming birthdays:")
+        for name, birthday in upcoming_birthdays:
+            print(f"{name}: {birthday}")
+    else:
+        print("No upcoming birthdays.")
 
 def main():
     book = AddressBook()
@@ -130,6 +152,9 @@ def main():
 
         elif command == "add-birthday":
             print(add_birthday(args, book))
+
+        elif command == "birthdays":
+            birthdays(args, book)
 
         else:
             print("Invalid command.")
